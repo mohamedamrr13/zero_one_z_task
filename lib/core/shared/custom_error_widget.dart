@@ -28,22 +28,6 @@ class CustomErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Error Icon
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: (iconColor ?? Colors.red).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon ?? Icons.error_outline,
-                size: 48,
-                color: iconColor ?? Colors.red,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Error Title
             const CustomText(
               text: 'عذراً، حدث خطأ',
               fontSize: 16,
@@ -51,7 +35,7 @@ class CustomErrorWidget extends StatelessWidget {
               color: Color(0xff2D3748),
             ),
             const SizedBox(height: 8),
-            
+
             // Error Message
             CustomText(
               text: errorMessage,
@@ -60,16 +44,15 @@ class CustomErrorWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 3,
             ),
-            const SizedBox(height: 20),
-            
-            // Retry Button
+            SizedBox(height: 20),
+            // Retry Bu tton
             ElevatedButton.icon(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: buttonColor ?? const Color(0xffD946A6),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
+                  horizontal: 12,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
@@ -80,10 +63,7 @@ class CustomErrorWidget extends StatelessWidget {
               icon: const Icon(Icons.refresh, size: 18),
               label: const Text(
                 'إعادة المحاولة',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
           ],
