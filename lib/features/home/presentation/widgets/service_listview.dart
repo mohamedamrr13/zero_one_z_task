@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zero_one_z_task/core/shared/custom_empty_state_widget.dart';
+import 'package:zero_one_z_task/core/shared/custom_error_widget.dart';
 import 'package:zero_one_z_task/core/theming/app_colors.dart';
 import 'package:zero_one_z_task/features/home/logic/service_cubit/service_cubit.dart';
 import 'package:zero_one_z_task/features/home/logic/service_cubit/service_state.dart';
@@ -48,6 +50,7 @@ class _ServiceListViewState extends State<ServiceListView> {
   Widget build(BuildContext context) {
     return BlocBuilder<ServiceCubit, ServiceState>(
       builder: (context, state) {
+        // Loading State
         if (state is ServiceLoading) {
           return Padding(
             padding: const EdgeInsets.only(right: 10.0),
@@ -65,10 +68,15 @@ class _ServiceListViewState extends State<ServiceListView> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: const Color(0xffFFF3F7).withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryColor,
+                        strokeWidth: 2,
+                      ),
+                    ),
                   );
                 },
               ),
@@ -76,60 +84,38 @@ class _ServiceListViewState extends State<ServiceListView> {
           );
         }
 
+        // Error State
         if (state is ServiceFailure) {
           return Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: SizedBox(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: CustomErrorWidget(
+              errorMessage: state.errorMessage,
+              onRetry: () => context.read<ServiceCubit>().refresh(),
               height: 220,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.errorMessage,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<ServiceCubit>().refresh();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                      ),
-                      child: const Text(
-                        'إعادة المحاولة',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              icon: Icons.room_service_outlined,
+              iconColor: const Color(0xffD946A6),
+              buttonColor: const Color(0xffD946A6),
             ),
           );
         }
 
+        // Success & Loading More States
         if (state is ServiceSuccess || state is ServiceLoadingMore) {
           final services = state is ServiceSuccess
               ? state.services
               : (state as ServiceLoadingMore).currentServices;
 
+          // Empty State
           if (services.isEmpty) {
             return Padding(
-              padding: const EdgeInsets.only(right: 10.0),
-              child: SizedBox(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: EmptyStateWidget(
+                message: 'لا توجد خدمات',
+                description: 'لم يتم العثور على أي خدمات متاحة حالياً',
+                icon: Icons.room_service_outlined,
                 height: 220,
-                child: Center(
-                  child: Text(
-                    'لا توجد خدمات',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                ),
+                onAction: () => context.read<ServiceCubit>().refresh(),
+                actionText: 'تحديث',
               ),
             );
           }
@@ -137,9 +123,7 @@ class _ServiceListViewState extends State<ServiceListView> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Services count indicator
               const SizedBox(height: 8),
-              // Services list
               Padding(
                 padding: const EdgeInsets.only(right: 10.0),
                 child: SizedBox(
@@ -147,9 +131,11 @@ class _ServiceListViewState extends State<ServiceListView> {
                   child: ListView.builder(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
                     itemCount:
                         services.length + (state is ServiceLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      // Loading More Indicator
                       if (index >= services.length) {
                         return Container(
                           width: 170,
@@ -159,18 +145,21 @@ class _ServiceListViewState extends State<ServiceListView> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xffFFF3F7),
+                            color: const Color(0xffFFF3F7).withOpacity(0.5),
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.black.withOpacity(0.1),
+                                color: AppColors.black.withOpacity(0.05),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                              strokeWidth: 2,
+                            ),
                           ),
                         );
                       }
