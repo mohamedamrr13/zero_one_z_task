@@ -1,70 +1,145 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zero_one_z_task/core/theming/app_colors.dart';
+import 'package:zero_one_z_task/features/home/logic/banner_cubit/banner_cubit.dart';
+import 'package:zero_one_z_task/features/home/logic/banner_cubit/banner_state.dart';
 
-class InvestmentBanner extends StatelessWidget {
+class InvestmentBanner extends StatefulWidget {
   const InvestmentBanner({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      height: 180,
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: 140,
-            top: 40,
-            bottom: 0,
-            child: Image.asset(
-              'assets/images/banner_image.png',
-              height: 180,
-              fit: BoxFit.contain,
-            ),
-          ),
+  State<InvestmentBanner> createState() => _InvestmentBannerState();
+}
 
-          // Text content on the right side (RTL)
-          Positioned(
-            left: 20,
-            top: 0,
-            bottom: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'استثمر في جمالك معانا',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      height: 1.3,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'احصل على نقاط عند شراء المنتجات او\nاستخدام الخدمات',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.95),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.right,
-                    maxLines: 2,
-                  ),
-                ],
+class _InvestmentBannerState extends State<InvestmentBanner> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<BannerCubit>().fetchBanners();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _launchUrl(String? url) async {
+    if (url == null || url.isEmpty) return;
+
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<BannerCubit, BannerState>(
+      builder: (context, state) {
+        if (state is BannerLoading) {
+          return Container(
+            margin: const EdgeInsets.all(16),
+            height: 180,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        }
+
+        if (state is BannerFailure) {
+          return Container(
+            margin: const EdgeInsets.all(16),
+            height: 180,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                state.errorMessage,
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
               ),
             ),
-          ),
-        ],
-      ),
+          );
+        }
+
+        if (state is BannerSuccess) {
+          final banners = state.banners;
+
+          if (banners.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
+          return Container(
+            margin: const EdgeInsets.all(16),
+            height: 180,
+            child: Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemCount: banners.length,
+                  itemBuilder: (context, index) {
+                    final banner = banners[index];
+                    return GestureDetector(
+                      onTap: () => _launchUrl(banner.link),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(banner.image),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                // Page Indicator
+                if (banners.length > 1)
+                  Positioned(
+                    bottom: 12,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        banners.length,
+                        (index) => Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: _currentPage == index ? 24 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _currentPage == index
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 }
