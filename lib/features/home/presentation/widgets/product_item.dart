@@ -13,6 +13,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final String productImage = product.image;
     final String productTitle = product.title;
+    final String productDescription = product.description;
     final bool hasOffer = product.hasOffer;
     final int? discountPercentage = product.discountPercentage;
     final bool hasMultipleImages = product.images.length > 1;
@@ -55,13 +56,13 @@ class ProductItem extends StatelessWidget {
                           ),
                           child: Image.network(
                             productImage,
-                            height: 120,
+                            height: 100,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Container(
-                                height: 120,
+                                height: 100,
                                 color: Colors.grey[200],
                                 child: Center(
                                   child: CircularProgressIndicator(
@@ -79,7 +80,7 @@ class ProductItem extends StatelessWidget {
                             },
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                height: 120,
+                                height: 100,
                                 color: Colors.grey[200],
                                 child: const Icon(
                                   Icons.broken_image,
@@ -137,9 +138,18 @@ class ProductItem extends StatelessWidget {
                             // Product Title
                             CustomText(
                               text: productTitle,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(height: 4),
+                            // Product Description
+                            CustomText(
+                              text: productDescription,
+                              fontSize: 11,
+                              color: const Color(0xff7A7E80),
                               maxLines: 2,
+                              height: 1.3,
                             ),
                             const Spacer(),
                           ],
@@ -149,6 +159,7 @@ class ProductItem extends StatelessWidget {
                   ],
                 ),
               ),
+              // Price Tag
               Positioned(
                 top: 0,
                 right: 0,
@@ -163,6 +174,13 @@ class ProductItem extends StatelessWidget {
                       topRight: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -194,7 +212,7 @@ class ProductItem extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Color(0xffD946A6),
                           ),
                         ),
                       ] else ...[
