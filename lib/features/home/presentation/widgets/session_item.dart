@@ -51,7 +51,7 @@ class SessionItem extends StatelessWidget {
                           spacing: 5,
                           children: [
                             CustomImageAsset(
-                              imagePath: 'assets/icons/clock_icon.svg',
+                              imagePath: 'assets/icons/date_icon.svg',
                             ),
                             CustomText(text: session.date, fontSize: 11),
                             CustomImageAsset(
